@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>अमृत शरणम् - Crowd Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nav-left">
+    <h1>अमृत शरणम्</h1>
+    <p>सुरक्षित संगम, संयमित जीवन</p>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="active">Dashboard</a>
+    <a href="/Analytics">Analytics</a>
+    <a href="/footage">Footages</a>
+  </div>
+</nav>
+
+<div class="dashboard">
+  <!-- Sidebar Zones -->
+  <aside class="zones-container">
+    <h2>Zones</h2>
+    <div class="zone-card" onclick="showZone('महाकाल लोक', [23.1828, 75.7772])">
+      <i class="fa-solid fa-location-dot"></i> महाकाल लोक
+    </div>
+    <div class="zone-card" onclick="showZone('राम घाट', [23.1840, 75.7750])">
+      <i class="fa-solid fa-water"></i> राम घाट
+    </div>
+    <div class="zone-card" onclick="showZone('काल भैरव', [23.1855, 75.7800])">
+      <i class="fa-solid fa-church"></i> काल भैरव
+    </div>
+    <div class="zone-card" onclick="showZone('शिप्रा घाट', [23.1835, 75.7775])">
+      <i class="fa-solid fa-water-ladder"></i> शिप्रा घाट
+    </div>
+
+    <div class="zone-dropdown">
+      <label for="regionSelect">More Zones</label>
+      <select id="regionSelect" onchange="showZone(this.options[this.selectedIndex].text, this.value)">
+        <option value="">Select Region</option>
+        <option value="23.1810,75.7790">नागरकोट दुर्ग</option>
+        <option value="23.1825,75.7765">संदीपनि आश्रम</option>
+        <option value="23.1840,75.7785">मंगलनाथ</option>
+      </select>
+    </div>
+  </aside>
+
+  <!-- Maps Section -->
+  <section class="map-section">
+    <div class="map-box">
+      <h3>Current_Situation</h3>
+      {{ map_html_1|safe }}
+      <form action="/refresh-first-map" method="POST" style="margin-top:14px; text-align:center;">
+        <button class="mapbutton" type="submit">Refresh Map</button>
+      </form>
+    </div>
+    <div class="map-box">
+      <h3>Prediction_Map</h3>
+      {% if map_html_2 %}
+        {{ map_html_2|safe }}
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<!-- Input + Summary Section -->
+<section class="summary-wrapper">
+  <!-- Input Panel -->
+  <div class="input-panel">
+    <h3>Event Details</h3>
+    <form method="POST" action="/ML-Input">
+      <input type="text" name="is_peak_hour" placeholder="is_peak_hour">
+      <input type="text" name="rain_chance" placeholder="rain_chance">
+      <input type="text" name="event_type" placeholder="event_type">
+      <input type="text" name="Date" placeholder="Date">
+      <input type="text" name="Time" placeholder="Time">
+      <input type="text" name="Dayofweek" placeholder="Weekdaynumber">
+      <button id="submitBtn">Submit</button>
+    </form>
+  </div>
+
+  <!-- Summary Points -->
+  <div class="point-section">
+    <h3>Current Situation</h3>
+    <ul class="point-list current-list">
+      {% if current_points %}
+        {% for point in current_points %}
+        <li>{{point}}</li>
+        {% endfor %}
+      {% else %}
+        <p>No summary available.</p>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="point-section">
+    <h3>1 Hour Prediction</h3>
+    <ul class="point-list predicted-list">
+      {% if predicted_points %}
+        {% for point in predicted_points %}
+        <li>{{point}}</li>
+        {% endfor %}
+      {% else %}
+        <p>No summary available.</p>
+      {% endif %}
+    </ul>
+  </div>
+</section>
+
+<!-- Zone Status Indicators -->
+<div class="zone-indicators-horizontal">
+  <div class="zone-status normal" id="zone1">महाकाल लोक</div>
+  <div class="zone-status normal" id="zone2">राम घाट</div>
+  <div class="zone-status normal" id="zone3">काल भैरव</div>
+  <div class="zone-status normal" id="zone4">शिप्रा घाट</div>
+</div>
+
+<!-- JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="i.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+.map-container {
+    flex: 1;
+    height: 100%;
+    min-height: 500px; /* fallback */
+    border: 1px solid #20078f;
+    border-radius: 8px;
+    padding: 5px;
+}

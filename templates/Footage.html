@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Camera Footages</title>
+  <link rel="stylesheet" href="/static/Footage.css "/>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Camera Footages</h1>
+  </header>
+
+  <main class="footage-grid">
+    <!-- Camera Card 1 -->
+    <article class="cam-card">
+      <div class="cam-header">
+        <span class="cam-title">Camera 1 - महाकाल लोक</span>
+        <div class="cam-controls">
+          <span class="status green">Live</span>
+          <button class="btn-fullscreen" data-target="cam1">⤢</button>
+        </div>
+      </div>
+      <div class="cam-body">
+        <video id="cam1" class="cam-video" controls playsinline autoplay muted>
+          <!-- Example sources: replace with your actual file/stream -->
+          <source src="/static/C1.webm" type="video/mp4">
+          <!-- For HLS (m3u8) many browsers require hls.js or video.js; placeholder shown -->
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </article>
+
+    <!-- Camera Card 2 -->
+    <article class="cam-card">
+      <div class="cam-header">
+        <span class="cam-title">Camera 2 - राम घाट</span>
+        <div class="cam-controls">
+          <span class="status yellow">Busy</span>
+          <button class="btn-fullscreen" data-target="cam2">⤢</button>
+        </div>
+      </div>
+      <div class="cam-body">
+        <video id="cam2" class="cam-video" controls playsinline autoplay muted>
+          <source src="/static/C2.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </article>
+
+    <!-- Camera Card 3 -->
+    <article class="cam-card">
+      <div class="cam-header">
+        <span class="cam-title">Camera 3 - काल भैरव</span>
+        <div class="cam-controls">
+          <span class="status orange">Alert</span>
+          <button class="btn-fullscreen" data-target="cam3">⤢</button>
+        </div>
+      </div>
+      <div class="cam-body">
+        <video id="cam3" class="cam-video" controls playsinline autoplay muted>
+          <source src="/static/C3.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </article>
+
+    <!-- Camera Card 4 -->
+    <article class="cam-card">
+      <div class="cam-header">
+        <span class="cam-title">Camera 4 - शिप्रा घाट</span>
+        <div class="cam-controls">
+          <span class="status red">Critical</span>
+          <button class="btn-fullscreen" data-target="cam4">⤢</button>
+        </div>
+      </div>
+      <div class="cam-body">
+        <video id="cam4" class="cam-video" controls playsinline autoplay muted>
+          <source src="/static/C4.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </article>
+  </main>
+
+  <script>
+    // Fullscreen button logic
+    document.querySelectorAll('.btn-fullscreen').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.target;
+        const vid = document.getElementById(id);
+        if (vid.requestFullscreen) {
+          vid.requestFullscreen();
+        } else if (vid.webkitRequestFullscreen) {
+          vid.webkitRequestFullscreen();
+        } else if (vid.msRequestFullscreen) {
+          vid.msRequestFullscreen();
+        } else {
+          alert('Fullscreen unsupported in this browser');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

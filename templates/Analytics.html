@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crowd Management Analytics</title>
+  <link rel="stylesheet" href="/static/Analytics.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <h1>Crowd Management Analytics</h1>
+    <div class="nav-right">
+      <a href="/Dashboard">Dashboard</a>
+      <a href="#" class="active">Analytics</a>
+      <a href="/footage">Footage</a>
+    </div>
+  </header>
+
+  <!-- Dashboard -->
+  <div class="dashboard">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Zones</h2>
+      <div class="zone-card"><i class="fas fa-map-marker-alt"></i> महाकाल लोक</div>
+      <div class="zone-card"><i class="fas fa-map-marker-alt"></i> राम घाट</div>
+      <div class="zone-card"><i class="fas fa-map-marker-alt"></i> काल भैरव</div>
+      <div class="zone-dropdown">
+        <select>
+          <option>More Zones</option>
+          <option>नागरकोट दुर्ग</option>
+          <option>संदीपनि आश्रम</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="analytics-grid">
+        <!-- Pie Chart -->
+        <div class="chart-card">
+          <h3>Zone wise People count</h3>
+          <canvas id="pieChart"></canvas>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="chart-card">
+          <h3>Crowd Density by Zone</h3>
+          <canvas id="barChart"></canvas>
+        </div>
+
+        <!-- Table -->
+        <div class="table-card">
+          <h3>Total Stampede Situations</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Severity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>12/08/2025</td><td>Overcrowding</td><td>High</td></tr>
+              <tr><td>13/08/2025</td><td>Emergency Exit Blocked</td><td>Medium</td></tr>
+              <tr><td>15/08/2025</td><td>Security Alert</td><td>High</td></tr>
+              <tr><td>20/08/2025</td><td>Technical Glitch</td><td>Low</td></tr>
+              <tr><td>25/08/2025</td><td>Unauthorized Entry</td><td>Medium</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+
+
+
+
+  
+
+  <script>
+    // Pie Chart
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+      type: 'pie',
+      data: {
+        labels: ['C1', 'C2', 'C3','C4', 'C5', 'C6','C7', 'C8', 'C9','C10'],
+        datasets: [{
+          data: [20, 45,35, 25, 30, 15, 10, 5, 40, 50],
+          backgroundColor: ['#63cbe8', '#f7ca18','#63e868','#e6e863','#e88263','#f16135','#f135a6','#ac0d64','#870dac','#210893'],
+          borderWidth: 1
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    // Bar Chart
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: ['महाकाल लोक', 'राम घाट', 'काल भैरव', 'शिप्रा घाट'],
+        datasets: [{
+          label: 'Crowd Density (%)',
+          data: [85, 70, 60, 50],
+          backgroundColor: ['#20078f', '#20078f','#20078f','#20078f'],
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { 
+          y: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
