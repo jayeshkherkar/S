@@ -125,53 +125,6 @@ def load_cached_counts_df():
     with open(FIRST_MAP_COUNTS, "rb") as f:
         return pickle.load(f)
 
-def get_actionable_points(total_count):
-    total_count = int(total_count)
-    if total_count > 4000:
-        return [
-            f"1. After one hour total count of people will be {total_count}",
-            "2. Zone Extremely Overcrowded: Deploy all available security and emergency staff immediately.",
-            "3. Announce emergency crowd management protocols over PA system.",
-            "4. Close entry points to restrict further crowd inflow.",
-            "5. Start medical emergency response teams and evacuation procedures.",
-            "6. Maintain clear communication channels and real-time monitoring."
-        ]
-    elif 2500 < total_count <= 3200:
-        return [
-            f"1. After one hour total count of people will be {total_count}",
-            "2. High occupancy: Deploy additional security and support staff.",
-            "3. Monitor entrances/exits closely for bottlenecks.",
-            "4. Update display boards with live crowd information.",
-            "5. Prepare crowd barrier materials near high-traffic areas.",
-            "6. Maintain communication devices and keep teams alert."
-        ]
-    elif 1500 < total_count <= 2500:
-        return [
-            f"1. After one hour total count of people will be {total_count}",
-            "2. Medium occupancy: Routine patrols in the zone.",
-            "3. Keep entry/exit gates clear and functional.",
-            "4. Continue live monitoring on screens.",
-            "5. Staff should stay visible for visitor assistance.",
-            "6. Check walkie-talkie and first-aid logistics."
-        ]
-    elif 500 < total_count <= 1000:
-        return [
-            f"1. After one hour total count of people will be {total_count}",
-            "2. Low occupancy: Keep minimal staff present for observation.",
-            "3. Routine security sweep every 20 minutes.",
-            "4. Check equipment and camera feeds for performance.",
-            "5. Ensure signage and guidance info is clear for visitors.",
-            "6. Prepare for potential crowd increase for next hour."
-        ]
-    else:
-        return [
-            f"1. After one hour total count of people will be {total_count}",
-            "2. Very low occupancy: Basic patrolling sufficient.",
-            "3. Use this time for maintenance checks in the zone.",
-            "4. Review previous hour's crowd statistics.",
-            "5. Plan team briefing or short training if feasible.",
-            "6. Stay ready to scale up as soon as count starts rising."
-        ]
 # deploy volunteers based on red cameras
 
 def deploy_volunteers(red_cameras):
@@ -184,6 +137,22 @@ def deploy_volunteers(red_cameras):
     for cid, count in red_cameras.items():
         volunteers[cid] = round((red_cameras[cid] / summed_cameras) * Totalvolunteers)
     return volunteers
+
+def generate_statement(volunteers: dict):
+    cam_count = len(volunteers)
+    
+    # Har camera ke liye "C1-6 volunteers" jaisa text banayenge
+    parts = [f"{cam}-{count} volunteers" for cam, count in volunteers.items()]
+    
+    # Sabko ek hi line me join kar denge
+    cameras_text = ", ".join(parts)
+    
+    # Final statement
+    statement = (
+        f"Since all {cam_count} cameras have reached the red level, volunteers will be deployed as follows: {cameras_text}."
+        #f"volunteers will be deployed as follows: {cameras_text}."
+    )
+    return statement
 
 
 # ----------------------- Routes -----------------------
@@ -316,7 +285,7 @@ def get_detail_ML():
 
             action_points.append('1. All cameras are showing red alert. Immediate action required!')
             action_points.extend(['2. Increase the frequency of monitoring in all zones.',
-            f'3. Since all 10 cameras have reached the red level, volunteers will be deployed as follows: C1-{volunteers['C1']}, C2-{volunteers['C2']} volunteers, C3-{volunteers['C3']} volunteers, C4-{volunteers['C4']} volunteers, C5-{volunteers['C5']} volunteers, C6-{volunteers['C6']} volunteers, C7-{volunteers['C7']} volunteers, C8-{volunteers['C8']} volunteers, C9-{volunteers['C9']} volunteers, C10-{volunteers['C10']} volunteers.',
+            f'3. {generate_statement(volunteers)}',
             '4. Transfer the people towards the hold zone through zig-zag barricades.',
             '5. Close the regular barricades and switch the people towards zig-zag barricades to control the crowd.',
             '6. Increase the speed of exit towards gates with the help of security personnel.'])
@@ -325,15 +294,15 @@ def get_detail_ML():
             action_points.append(f'1. In the map there are total {len(red_cameras)} cameras showing red alert in Mahankal Lok zone.')
             action_points.append(f'2. Cameras which showing red alert are: {", ".join(red_cameras.keys())}')
             action_points.extend([
-                '3. Close the regular barricades and switch the people towards zig-zag barricades to control the crowd.',
+               f'3. {generate_statement(volunteers)}',
                 '4. After that transfer the people towards the hold zone through zig-zag barricades.',
-                '5. Deploy additional security personnel from other zones to manage the crowd.',
+                '5. Close the regular barricades and switch the people towards zig-zag barricades to control the crowd.',
                 '6. Increase the speed of exit towards gates with the help of security personnel.'
-
-        ])
+            ])
     else:
         # Also give global recommendation based on total_people_pred
-        action_points = get_actionable_points(total_people_pred)
+        #action_points = get_actionable_points(total_people_pred)
+        pass
 
     # Map 1: from cache
     map_html_1 = load_cached_first_map()
