@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from cameracount import detect_persons_in_video
 import joblib
 import random
@@ -15,12 +15,7 @@ import io
 app = Flask(__name__)
 
 # ----------------------- Static camera meta -----------------------
-"""data = {
-    'camera_id': ['C1', 'C2', 'C3', 'C4', 'C5'],
-    'latitude':  [23.183291, 23.182894, 23.183351, 23.183259, 23.181846],
-    'longitude': [75.766737, 75.765681, 75.768751, 75.768519, 75.767256],
-    'people_count': [0]*5
-}"""
+red_camlist = {}
 data = {
       'camera_id': ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10'],
       'latitude': [23.183291, 23.182894, 23.183351, 23.183259, 23.181846,
@@ -40,29 +35,29 @@ FIRST_MAP_COUNTS = os.path.join(CACHE_DIR, "first_map_counts.pkl")
 # ----------------------- Helpers -----------------------
 # For YOLO counts
 def get_color(count):
-    if count > 250:
+    if count > 350:
         return 'red'
-    elif 200 < count <= 250:
+    elif 305 < count <= 350:
         return 'orange'
-    elif 150 < count <= 200:
+    elif 240 < count <= 305:
         return 'yellow'
     else:
         return 'green'
 # For ML model actionable points
-"""def get_color1(count):
-    if count > 300:
-        return 'red'
-    elif 250 <= count <= 300:
-        return 'orange'
-    elif 200 <= count < 250:
-        return 'yellow'
-    else:
-        return 'green'"""
+#def get_color1(count):
+    #if count > 300:
+       # return 'red'
+    #elif 250 <= count <= 300:
+        #return 'orange'
+    #elif 200 <= count < 250:
+        #return 'yellow'
+    #else:
+        #return 'green'
 # Load ML model once
 model = joblib.load('crowd_rf_model_compressed.joblib')
 
 def build_folium_from_counts(df_counts, title=None):
-    """Common renderer for circle markers from df_counts having latitude, longitude, people_count."""
+    #Common renderer for circle markers from df_counts having latitude, longitude, people_count.
     map_center = [23.1819, 75.7681]
     m = folium.Map(location=map_center, zoom_start=17)
     if title:
@@ -81,16 +76,13 @@ def build_folium_from_counts(df_counts, title=None):
         ).add_to(m)
         folium.Marker(
             location=[row['latitude'], row['longitude']],
-            icon=folium.DivIcon(html=f"""<div style="font-size: 10pt">{row['camera_id']}</div>""")
+            icon=folium.DivIcon(html=f'<div style="font-size: 10pt">{row["camera_id"]}</div>')
         ).add_to(m)
     return m._repr_html_()
 
-"""(video_path, model_path="yolo11l.pt", conf=0.1,
-                            output_path="new_output.mp4", show_window=False,
-                            use_colab=False, skip_frames=60, tile_size=1984)"""
+#(video_path, model_path="yolo11l.pt", conf=0.1,output_path="new_output.mp4", show_window=False, use_colab=False, skip_frames=60, tile_size=1984)
 
 def compute_and_cache_first_map():
-    """Run YOLO on 5 videos, update counts, save HTML to cache, and return HTML."""
     df_counts = df_cam.copy()
     for i in range(len(df_counts)):
         # Heavy step: run once and cache
@@ -100,7 +92,9 @@ def compute_and_cache_first_map():
             False, 60,1984
         )
         df_counts.at[i, 'people_count'] = int(count)*7
+        df_counts.to_csv('data.csv', index=False)
 
+    #red_camlist.extend(df_counts['people_count'].tolist())
     map_html_1 = build_folium_from_counts(df_counts, title="Live YOLO Counts (cached)")
     with open(FIRST_MAP_HTML, "w", encoding="utf-8") as f:
         f.write(map_html_1)
@@ -109,7 +103,7 @@ def compute_and_cache_first_map():
     return map_html_1
 
 def load_cached_first_map():
-    """Return cached first-map HTML; if missing, compute and cache."""
+    #Return cached first-map HTML; if missing, compute and cache.
     if os.path.exists(FIRST_MAP_HTML) and os.path.exists(FIRST_MAP_COUNTS):
         with open(FIRST_MAP_HTML, "r", encoding="utf-8") as f:
             return f.read()
@@ -174,6 +168,19 @@ def index():
 def refresh_first_map():
     map_html_1 = compute_and_cache_first_map()
     return render_template("index.html", map_html_1=map_html_1, map_html_2=None)
+
+@app.route("/trigger_function", methods=["POST"])
+def trigger_function():
+    df = pd.read_csv('data.csv')
+    for index, row in df.iterrows():
+        red_camlist[row['camera_id']] = row['people_count']
+    max_num = 0
+    camera = ''
+    for i in range(1, 11):
+        if red_camlist[f'C{i}'] > max_num:
+            max_num = red_camlist[f'C{i}']
+            camera = f'C{i}'
+    return jsonify({"camera": camera, "count": max_num})
 
 @app.route("/ML-Input", methods=["POST"])
 def get_detail_ML():
@@ -302,7 +309,11 @@ def get_detail_ML():
     else:
         # Also give global recommendation based on total_people_pred
         #action_points = get_actionable_points(total_people_pred)
-        pass
+        return render_template("index.html",
+                               map_html_1=load_cached_first_map(),
+                               map_html_2=map_html_2,
+                               predicted_points=["No cameras are in red alert. Situation is under control."],
+                               predicted_total=total_people_pred)
 
     # Map 1: from cache
     map_html_1 = load_cached_first_map()
@@ -324,3 +335,5 @@ def footage():
     return render_template("Footage.html")
 if __name__ == '__main__':
     app.run(debug=True)
+
+

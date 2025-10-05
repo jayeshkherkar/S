@@ -125,5 +125,49 @@
 <!-- JS -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="i.js"></script>
+<script>
+// ✅ Step 1: Map ke camera ke coordinates define kar le
+const cameraLocations = {
+  C1: [23.183291, 75.766737],
+  C2: [23.182894, 75.765681],
+  C3: [23.183351, 75.768751],
+  C4: [23.183259, 75.768519],
+  C5: [23.181846, 75.767256],
+  C6: [23.181745, 75.768779],
+  C7: [23.179677, 75.769164],
+  C8: [23.177771, 75.768636],
+  C9: [23.176966, 75.770125],
+  C10: [23.176337, 75.769610]
+};
+
+document.addEventListener("keydown", function (event) {
+  console.log(`Key pressed: ${event.key}`);
+  if (event.key === "a") {
+    event.preventDefault();
+    console.log("Detected key 'a', triggering fetch");
+
+    fetch("/trigger_function", { method: "POST" })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Data from server:", data);
+        if (data) {
+          alert(`Maximum count in camera ${data.camera}`);
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching data:", error);
+      });
+  }
+// });
+// document.addEventListener("keydown", function(event) {
+//       if (event.key === "c") {
+//         event.preventDefault();
+//         const cameraId = "C3";       // Fixed camera ID
+//         const maxCount = 350;         // Fixed max count value
+//         alert(`Maximum count in camera ${cameraId} is ${maxCount}`);
+//       }
+ });
+
+</script>
 </body>
 </html>
