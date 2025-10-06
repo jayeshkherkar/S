@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camera Summary Extra Tall</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f6f8fa;
+    }
+    .main-container {
+      max-width: 1700px;
+      margin: 50px auto 0 auto;
+    }
+    .section-box {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+      padding: 54px 48px;
+      min-height: 760px; /* Increased height */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      font-size: 1.30rem;
+    }
+    .section-box h4 {
+      font-size: 2.12rem;
+      margin-bottom: 38px;
+    }
+    .summary-list li {
+      margin-bottom: 28px;
+      font-size: 1.25rem;
+      line-height: 2.15;
+    }
+    video {
+      min-height: 390px;
+      height: 520px; /* Increased height */
+      max-height: 520px;
+      width: 100%;
+      border-radius: 18px;
+      background: #eee;
+    }
+    @media (max-width: 992px) {
+      .section-box {
+        min-height: 900px;
+        padding: 30px 14px;
+      }
+      video {
+        min-height: 500px;
+        height: 900px;
+        max-height: 900px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="row gx-5">
+      <!-- Video Section -->
+      <div class="col-lg-6">
+        <div class="section-box">
+          <h4>Camera Footage</h4>
+          <video controls playsinline autoplay muted>
+            <source src="/static/nsn1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <!-- Summary Points Section -->
+      <div class="col-lg-6">
+        <div class="section-box">
+          <h4>Summary Points</h4>
+          <ul class="summary-list">
+             {% if points %}
+                {% for point in points %}
+                <li>{{point}}</li>
+                {% endfor %}
+             {% else %}
+               <p>No summary available.</p>
+             {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

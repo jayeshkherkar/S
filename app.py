@@ -16,6 +16,7 @@ app = Flask(__name__)
 
 # ----------------------- Static camera meta -----------------------
 red_camlist = {}
+action_points_current_situation = []
 data = {
       'camera_id': ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10'],
       'latitude': [23.183291, 23.182894, 23.183351, 23.183259, 23.181846,
@@ -121,16 +122,26 @@ def load_cached_counts_df():
 
 # deploy volunteers based on red cameras
 
-def deploy_volunteers(red_cameras):
+def deploy_volunteers(red_cameras,d):
     volunteers = {}
     Redratio = 1/50
-    summed_cameras = sum(red_cameras.values())
+    summed_cameras = sum(d['people_count'].tolist())
     if summed_cameras == 0:
         return {cid: 0 for cid in red_cameras}  # sabko 0 volunteers
     Totalvolunteers = summed_cameras * Redratio
     for cid, count in red_cameras.items():
         volunteers[cid] = round((red_cameras[cid] / summed_cameras) * Totalvolunteers)
     return volunteers
+
+def volunteers_needed(num,d):
+    redratio = 1/50
+    num1 = int(num)
+    summed_cameras = sum(d['people_count'].tolist())
+    if summed_cameras == 0:
+        return 0
+    Totalvolunteers = summed_cameras * redratio
+    volunteers_needed = round((num1 / summed_cameras) * Totalvolunteers)
+    return volunteers_needed
 
 def generate_statement(volunteers: dict):
     cam_count = len(volunteers)
@@ -181,6 +192,49 @@ def trigger_function():
             max_num = red_camlist[f'C{i}']
             camera = f'C{i}'
     return jsonify({"camera": camera, "count": max_num})
+
+@app.route("/give_suggestions_for_Current_situation_map", methods=["POST"])
+def give_suggestions_for_Current_situation_map():
+    d = pd.read_csv('data.csv')
+    red_cameras = {f'C{i+1}': d.at[i, 'people_count'] for i in range(len(d)) if get_color(d.at[i, 'people_count']) == 'red'}
+    map_html_1 = load_cached_first_map()
+    volunteers = deploy_volunteers(red_cameras,d) 
+    if red_cameras:
+
+        if len(red_cameras) == len(d):
+
+            action_points_current_situation.append('1. All cameras are showing red alert. Immediate action required!')
+            action_points_current_situation.extend(['2. Increase the frequency of monitoring in all zones.',
+            f'3. {generate_statement(volunteers)}',
+            '4. Transfer the people towards the hold zone through zig-zag barricades.',
+            '5. Close the regular barricades and switch the people towards zig-zag barricades to control the crowd.',
+            '6. Increase the speed of exit towards gates with the help of security personnel.'])
+            
+        else:
+            action_points_current_situation.append(f'1. In the map there are total {len(red_cameras)} cameras showing red alert in Mahankal Lok zone.')
+            action_points_current_situation.append(f'2. Cameras which showing red alert are: {", ".join(red_cameras.keys())}')
+            action_points_current_situation.extend([
+               f'3. {generate_statement(volunteers)}',
+                '4. After that transfer the people towards the hold zone through zig-zag barricades.',
+                '5. Close the regular barricades and switch the people towards zig-zag barricades to control the crowd.',
+                '6. Increase the speed of exit towards gates with the help of security personnel.'
+            ])
+    else:
+        # Also give global recommendation based on total_people_pred
+        #action_points = get_actionable_points(total_people_pred)
+        return render_template("index.html",
+                               map_html_1=load_cached_first_map(),
+                               map_html_2=None,
+                               current_points=["No cameras are in red alert. Situation is under control."])
+
+
+    return render_template("index.html",
+                           map_html_1=map_html_1,
+                           map_html_2=None,
+                           current_points=action_points_current_situation,
+                           predicted_total=None)
+
+
 
 @app.route("/ML-Input", methods=["POST"])
 def get_detail_ML():
@@ -282,7 +336,7 @@ def get_detail_ML():
 
     # Determine red cameras using get_color
     red_cameras = {cid:cnt for cid,cnt in camera_details.items() if get_color(cnt) == 'red'}
-    volunteers = deploy_volunteers(red_cameras)  
+    volunteers = deploy_volunteers(red_cameras,df_counts1)  
     # Use total_people_pred to compute global actionable points too (if you want)
     action_points = []
     
@@ -313,7 +367,8 @@ def get_detail_ML():
                                map_html_1=load_cached_first_map(),
                                map_html_2=map_html_2,
                                predicted_points=["No cameras are in red alert. Situation is under control."],
-                               predicted_total=total_people_pred)
+                               predicted_total=total_people_pred,
+                               current_points=action_points_current_situation)
 
     # Map 1: from cache
     map_html_1 = load_cached_first_map()
@@ -322,8 +377,21 @@ def get_detail_ML():
                            map_html_1=map_html_1,
                            map_html_2=map_html_2,
                            predicted_points=action_points,
-                           predicted_total=total_people_pred)
+                           predicted_total=total_people_pred,
+                           current_points=action_points_current_situation)
 
+@app.route("/popup_video")
+def popup_video():
+    d1 = pd.read_csv('data.csv')
+    popup_list = []
+    max_num = request.args.get('max_num')
+    popup_list.append(f'1. Maximum count in front of camera is {max_num}, please send the {volunteers_needed(max_num,d1)} volunteers immediately')
+    popup_list.append(f'2. Immediately alert all security, police, and volunteers, and send quick reaction teams (QRT) to the site of this camera.')
+    popup_list.append(f'3. Identify and clear the nearest and safest exits, and require {volunteers_needed(max_num,d1)} volunteers guiding the crowd to facilitate evacuation—remove barricades or obstructions swiftly')
+    popup_list.append(f'4. Alert the nearest medical and first aid stations. Deploy medical staff immediately to accident or injury spots')
+    popup_list.append(f'5. Unlock doors or barriers if locked; clear bottlenecks and choke points immediately')
+    popup_list.append(f'6. Collect updates every 2-5 minutes from ground teams. Keep senior authorities informed about the evolving situation.')
+    return render_template("popup_video.html", points = popup_list)
 
 # ----------------------- (Your Analytics route unchanged) -----------------------
 @app.route("/Dashboard")

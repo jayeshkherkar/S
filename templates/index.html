@@ -57,9 +57,14 @@
     <div class="map-box">
       <h3>Current_Situation</h3>
       {{ map_html_1|safe }}
-      <form action="/refresh-first-map" method="POST" style="margin-top:14px; text-align:center;">
-        <button class="mapbutton" type="submit">Refresh Map</button>
-      </form>
+      <div style="display: flex; justify-content: center; gap: 16px;">
+        <form action="/refresh-first-map" method="POST" style="margin-top:14px;">
+          <button class="mapbutton" type="submit">Refresh Map</button>
+        </form>
+        <form action="/give_suggestions_for_Current_situation_map" method="POST" style="margin-top:14px;">
+          <button class="mapbutton" type="submit">Get Suggestions</button>
+        </form>
+      </div>
     </div>
     <div class="map-box">
       <h3>Prediction_Map</h3>
@@ -151,22 +156,17 @@ document.addEventListener("keydown", function (event) {
       .then(data => {
         console.log("Data from server:", data);
         if (data) {
-          alert(`Maximum count in camera ${data.camera}`);
+          alert(`Alert there is stampede situation at camera ${data.camera} press button to see the situation`);
+          window.location.href = "/popup_video?max_num=" + encodeURIComponent(data.count);
         }
       })
       .catch(error => {
         console.error("Error fetching data:", error);
       });
   }
-// });
-// document.addEventListener("keydown", function(event) {
-//       if (event.key === "c") {
-//         event.preventDefault();
-//         const cameraId = "C3";       // Fixed camera ID
-//         const maxCount = 350;         // Fixed max count value
-//         alert(`Maximum count in camera ${cameraId} is ${maxCount}`);
-//       }
  });
+
+ 
 
 </script>
 </body>
